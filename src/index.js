@@ -234,8 +234,8 @@ function init() {
 
     controls.screenSpacePanning = false;
 
-    controls.minDistance = 20;
-    controls.maxDistance = 20;
+    controls.minDistance = 15;
+    controls.maxDistance = 15;
 
     controls.maxPolarAngle = Math.PI;
 
