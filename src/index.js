@@ -17,7 +17,10 @@ let scene,
     controls,
     rubiksCube;
 
-function render() {
+function render(time) {
+    if (rubiksCube.isMoving) {
+        rubiksCube.rotate();
+    }
     requestAnimationFrame(render);
     controls.update();
     renderer.render(scene, camera);
@@ -57,6 +60,14 @@ async function init() {
     scene = new Scene();
 
     renderer = new WebGLRenderer();
+
+    rubiksCube = new RubiksCube({
+        cubieSize: 1,
+        cubieSpacing: .05,
+        rotatingSpeed: Math.PI / 45
+    });
+
+    rubiksCube.init();
 
     renderer.setSize(
         window.innerWidth,
@@ -111,16 +122,7 @@ async function init() {
         camera.position.z = 20;
     })
 
-    const rubiks = new RubiksCube({
-        cubieSize: 1,
-        cubieSpacing: .05,
-        rotatingSpeed: Math.PI / 45
-    });
-
-    rubiks.init();
-
-    scene.add(rubiks);
-
+    scene.add(rubiksCube);
 
     render();
 }
