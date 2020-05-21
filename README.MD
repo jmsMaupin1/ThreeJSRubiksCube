@@ -9,7 +9,8 @@ Click on any of the black area thats not the header with the text input to move 
 
 # Getting started
 
-If you just want to play with the Rubik's Cube all you need, just open the index.html file in ./public
+If youre just looking to play with it, open the terminal and run `npm start`
+then open `localhost:8000/index.html`
 
 ## To Start Developing
 
@@ -19,7 +20,11 @@ Once evertyhings done downloading:
 
 run `npm run build`
 
-This will start the webpack development server and automatically bundle the javascript files as you save the files.
+This will start the webpack development server and automatically bundle the javascript files as you save them.
+
+run `npm run start`
+
+As you make changes, you should see them at `localhost:8000/index.html`
 
 # Notation Explanation:
 
