@@ -14,6 +14,8 @@ then open `localhost:8000/index.html`
 
 ## To Start Developing
 
+Make sure you have [NodeJS](https://nodejs.org/en/) and [http-server](https://www.npmjs.com/package/http-server) installed
+
 run `npm install`
 
 Once evertyhings done downloading:

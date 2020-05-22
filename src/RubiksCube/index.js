@@ -3,7 +3,12 @@ import {
     BoxBufferGeometry,
     Mesh,
     MeshLambertMaterial,
-    Group
+    Color,
+    MeshPhysicalMaterial,
+    Group,
+    FaceColors,
+    Box3,
+    Vector3
 } from "three";
 
 import {
@@ -13,6 +18,8 @@ import {
     direction_map,
     face_color_map
 } from './map_constants';
+
+import { loadGeometry, nearlyEqual } from './utils';
 
 export default class RubiksCubeV2 extends Object3D {
     constructor({cubieSize, cubieSpacing, rotatingSpeed}) {
@@ -32,6 +39,16 @@ export default class RubiksCubeV2 extends Object3D {
         this.layer_map = layer_filter_map(this.cubieSize, this.cubieSpacing);
 
         this.pivot = new Group();
+
+        this.cubieMaterial = new MeshPhysicalMaterial({
+            color: 0xeeeeee,
+            vertexColors: FaceColors,
+            metalness: 0,
+            roughness: 0,
+            clearcoat: 0,
+            reflectivity: 0
+        });
+        
     }
 
     setActiveGroup(layer) {
@@ -58,7 +75,7 @@ export default class RubiksCubeV2 extends Object3D {
     }
 
     rotate() {
-        let {pivot, currentMove, currentDirection, rotatingSpeed} = this;
+        let {pivot, currentMove, currentDirection, rotatingSpeed, isMoving} = this;
 
         let currentRotation = pivot.rotation[axis_map[currentMove]];
         let goalRotation = Math.PI / (direction_map[currentMove] / currentDirection);
@@ -74,10 +91,10 @@ export default class RubiksCubeV2 extends Object3D {
     }
     
     completeRotation() {
-        let {isMoving, currentMove, pivot, activeGroup, moveQueue} = this;
+        let {pivot, activeGroup, moveQueue} = this;
 
-        isMoving = false;
-        currentMove = '';
+        this.isMoving = false;
+        this.currentMove = '';
 
         pivot.updateMatrixWorld();
         this.remove(pivot);
@@ -99,7 +116,8 @@ export default class RubiksCubeV2 extends Object3D {
         let instructions = algorithm.split(" ");
     
         for (let move of instructions) {
-    
+            if (move === '') continue;
+
             if (move.length === 1) {
                 this.moveQueue.push([move, 1]);
                 continue;
@@ -107,7 +125,7 @@ export default class RubiksCubeV2 extends Object3D {
     
             let layer = move[0];
             let direction = move[1] == "'" ? -1 : 2;
-    
+
             this.moveQueue.push([layer, direction])
         }
     }
@@ -119,42 +137,45 @@ export default class RubiksCubeV2 extends Object3D {
         this.startRotation(layer, direction)
     }
 
-    init() {
-        let boxGeometry = new BoxBufferGeometry(
-            this.cubieSize,
-            this.cubieSize,
-            this.cubieSize
-        )       
+    async init() {
+        let {cubieSize, cubieMaterial, cubieSpacing} = this;
+        
+        let cubieGeometry = await loadGeometry('./assets/cube-bevelled.glb');
 
         for (let x = 0; x < 3; x++) {
             for (let y = 0; y < 3; y++) {
                 for (let z = 0; z < 3; z++) {
-                    let colors = new Array(6);
-                    colors.fill(0x111111);
-
-                    if (y == 2)
-                        colors[face_map['top']] = face_color_map['top'];
-                    if (y == 0)
-                        colors[face_map['bottom']] = face_color_map['bottom'];
-                    if (x == 2)
-                        colors[face_map['right']] = face_color_map['right']
-                    if (x == 0)
-                        colors[face_map['left']] = face_color_map['left'];
-                    if (z == 2)
-                        colors[face_map['front']] = face_color_map['front']
-                    if (z == 0)
-                        colors[face_map['back']] = face_color_map['back']
-
-                    let materials = colors.map(color => new MeshLambertMaterial({color}))
+                    if(x === 1 && y === 1 && z == 1) continue;
                     
-                    let cubie = new Mesh(boxGeometry, materials);
-                    cubie.userData.colors = colors;
+                    let coloredGeo = cubieGeometry.clone();
+                    coloredGeo.faces.forEach(face => {
+                        face.color = new Color(0x282828)
+
+                        if (y == 2 && nearlyEqual(face.normal.y, 1, 1e-12))
+                            face.color = new Color(face_color_map['top']);
+                        if (y == 0 && nearlyEqual(face.normal.y, -1, 1e-12))
+                            face.color = new Color(face_color_map['bottom']);
+                        if (x == 2 && nearlyEqual(face.normal.x, 1, 1e-12))
+                            face.color = new Color(face_color_map['right']);
+                        if (x == 0 && nearlyEqual(face.normal.x, -1, 1e-12))
+                            face.color = new Color(face_color_map['left']);
+                        if (z == 2 && nearlyEqual(face.normal.z, 1, 1e-12))
+                            face.color = new Color(face_color_map['front']);
+                        if (z == 0 && nearlyEqual(face.normal.z, -1, 1e-12))
+                            face.color = new Color(face_color_map['back']);
+                    })
+
+                    let cubie = new Mesh(coloredGeo, cubieMaterial);
+                    let boundingBox = new Box3().setFromObject(cubie)
+                    let size = new Vector3();
+                    boundingBox.getSize(size);
+                    cubie.scale.set(cubieSize/size.x, cubieSize/size.y, cubieSize/size.z);
 
                     cubie.position.set(
-                        (x - 1) * (this.cubieSize + this.cubieSpacing),
-                        (y - 1) * (this.cubieSize + this.cubieSpacing),
-                        (z - 1) * (this.cubieSize + this.cubieSpacing)
-                    );
+                        (x - 1) * (cubieSize + cubieSpacing),
+                        (y - 1) * (cubieSize + cubieSpacing),
+                        (z - 1) * (cubieSize + cubieSpacing)
+                    )
 
                     this.cubies.push(cubie);
                     this.attach(cubie);

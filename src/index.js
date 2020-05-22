@@ -2,7 +2,8 @@ import {
     Scene,
     PerspectiveCamera,
     WebGLRenderer,
-    DirectionalLight
+    DirectionalLight,
+    sRGBEncoding,
 } from "three";
 
 import RubiksCube from './RubiksCube';
@@ -56,23 +57,25 @@ function addLights(scene) {
     scene.add(light6)
 }
 
-async function init() {
+function init() {
     scene = new Scene();
 
     renderer = new WebGLRenderer();
-
-    rubiksCube = new RubiksCube({
-        cubieSize: 1,
-        cubieSpacing: .05,
-        rotatingSpeed: Math.PI / 45
-    });
-
-    rubiksCube.init();
 
     renderer.setSize(
         window.innerWidth,
         window.innerHeight
     );
+
+    renderer.outputEncoding = sRGBEncoding;
+
+    rubiksCube = new RubiksCube({
+        cubieSize: 1,
+        cubieSpacing: .005,
+        rotatingSpeed: Math.PI / 45
+    });
+
+    rubiksCube.init();
 
     camera = new PerspectiveCamera(
         45,
@@ -97,8 +100,8 @@ async function init() {
 
     controls.screenSpacePanning = false;
 
-    controls.minDistance = 15;
-    controls.maxDistance = 15;
+    controls.minDistance = 10;
+    controls.maxDistance = 13;
 
     controls.maxPolarAngle = Math.PI;
 
@@ -113,7 +116,7 @@ async function init() {
     scrambleSubmitButton.addEventListener('click', () => {
         let algorithm = scrambleTextArea.value;
         scrambleTextArea.value = '';
-        rubiksCube.performAlg(algorithm.toUpperCase());
+        rubiksCube.performAlg(algorithm);
     })
 
     resetCameraButton.addEventListener('click', () => {
