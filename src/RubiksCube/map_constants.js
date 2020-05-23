@@ -77,23 +77,14 @@ export const layer_filter_map = (cubieSize, cubieSpacing) => {
     }
 }
 
-export const face_map = {
-    right: 0,
-    left: 1,
-    top: 2,
-    bottom: 3,
-    front: 4,
-    back: 5 
-}
-
 export const face_color_map = {
-    inside: 0x000000,
-    top:  0xffff00,
-    bottom:  0xffffff,
-    right:  0xff0000,
-    left:  0xff5c00,
-    front:  0x0000ff,
-    back:  0x00ff00
+    inside: 0x050505,
+    U:  0xffff00,
+    D:  0xffffff,
+    R:  0xff0000,
+    L:  0xff5c00,
+    F:  0x0000ff,
+    B:  0x00ff00
 }
 
 export const axis_map = {

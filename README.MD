@@ -22,7 +22,7 @@ Once evertyhings done downloading:
 
 run `npm run build`
 
-This will start the webpack development server and automatically bundle the javascript files as you save them.
+This will start webpack bundling and automatically bundle the javascript files as you save them. You will still need to reload the page to see changes take effect.
 
 run `npm run start`
 
