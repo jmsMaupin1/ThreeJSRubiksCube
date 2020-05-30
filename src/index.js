@@ -12,9 +12,6 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 let scene,
     camera,
     renderer,
-    scrambleTextArea,
-    scrambleSubmitButton,
-    resetCameraButton,
     controls,
     rubiksCube;
 
@@ -90,9 +87,10 @@ function setupOrbitControls() {
 }
 
 function setupEventHandlers() {
-    scrambleTextArea = document.getElementById('scramble');
-    scrambleSubmitButton = document.getElementById('submit');
-    resetCameraButton = document.getElementById('reset-camera');
+    let scrambleTextArea = document.getElementById('scramble');
+    let scrambleSubmitButton = document.getElementById('submit');
+    let resetCameraButton = document.getElementById('reset-camera');
+    let resetCubeButton = document.getElementById('reset-cube');
 
     scrambleSubmitButton.addEventListener('click', () => {
         let algorithm = scrambleTextArea.value;
@@ -104,6 +102,10 @@ function setupEventHandlers() {
         camera.position.x = -10;
         camera.position.y = 10;
         camera.position.z = 20;
+    })
+
+    resetCubeButton.addEventListener('click', () => {
+        rubiksCube.resetCube();
     })
 }
 

@@ -232,6 +232,17 @@ export default class RubiksCubeV2 extends Object3D {
         })
     }
 
+    // Allows user to reset back to a solved cube state
+    resetCube() {
+        this.cubies.forEach(cubie => {
+            let { initialPosition } = cubie.userData;
+            let { initialRotation } = cubie.userData;
+
+            cubie.position.copy(initialPosition);
+            cubie.rotation.copy(initialRotation);
+        })
+    }
+
     async init() {
         let {cubieSize, cubieMaterial, cubieSpacing} = this;
         
@@ -329,8 +340,8 @@ export default class RubiksCubeV2 extends Object3D {
                     // We are making sure the id of each cube is sorted so that we have a consistent way to look them up later
                     cubie.userData.id = cubieId.split("").sort().join("");
                     // This is so we can reset the cube whenever we need to
-                    cubie.userData.initialPosition = cubie.position;
-                    cubie.userData.initialRotation = cubie.rotation;
+                    cubie.userData.initialPosition = cubie.position.clone();
+                    cubie.userData.initialRotation = cubie.rotation.clone();
 
                     // This is to keep track of faces on rotation, to enable/disable stickers
                     cubie.userData.faceNormals = faceNormals;
