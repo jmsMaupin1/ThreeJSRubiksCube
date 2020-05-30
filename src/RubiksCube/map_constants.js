@@ -1,5 +1,9 @@
 import { nearlyEqual } from "./utils";
 
+/*
+    This takes the size of each cubie and the space between them
+    and calculates if a given position is in the requested layer
+*/
 export const layer_filter_map = (cubieSize, cubieSpacing) => {
     return {
         U: ({x, y, z}) => nearlyEqual(
@@ -77,6 +81,7 @@ export const layer_filter_map = (cubieSize, cubieSpacing) => {
     }
 }
 
+// These are the sticker colors of each face, and the inside of the cube
 export const face_color_map = {
     inside: 0x050505,
     U:  0xffff00,
@@ -87,6 +92,7 @@ export const face_color_map = {
     B:  0x00ff00
 }
 
+// This maps each layer to which axis it rotates on
 export const axis_map = {
     L: 'x',
     l: 'x',
@@ -106,6 +112,7 @@ export const axis_map = {
 
 }
 
+// This is just here to decide which direction to rotate
 export const direction_map = {
     L: 2,
     l: 2,

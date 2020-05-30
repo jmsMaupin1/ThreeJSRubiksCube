@@ -18,16 +18,16 @@ let scene,
     controls,
     rubiksCube;
 
-function render(time) {
-    if (rubiksCube.isMoving) {
+function render() {
+    if (rubiksCube.isMoving) 
         rubiksCube.rotate();
-    }
+    
     requestAnimationFrame(render);
     controls.update();
     renderer.render(scene, camera);
 }
 
-function addLights(scene) {
+function setupLights(scene) {
     const LIGHT_COLOUR = 0xffffff
     const LIGHT_INTENSITY = 1.2
     const LIGHT_DISTANCE = 10
@@ -57,26 +57,7 @@ function addLights(scene) {
     scene.add(light6)
 }
 
-function init() {
-    scene = new Scene();
-
-    renderer = new WebGLRenderer();
-
-    renderer.setSize(
-        window.innerWidth,
-        window.innerHeight
-    );
-
-    renderer.outputEncoding = sRGBEncoding;
-
-    rubiksCube = new RubiksCube({
-        cubieSize: 1,
-        cubieSpacing: .005,
-        rotatingSpeed: Math.PI / 45
-    });
-
-    rubiksCube.init();
-
+function setupCamera() {
     camera = new PerspectiveCamera(
         45,
         window.innerWidth / window.innerHeight,
@@ -89,7 +70,9 @@ function init() {
     camera.position.z = 20;
 
     camera.lookAt(scene.position);
+}
 
+function setupOrbitControls() {
     controls = new OrbitControls(
         camera,
         renderer.domElement
@@ -104,11 +87,9 @@ function init() {
     controls.maxDistance = 13;
 
     controls.maxPolarAngle = Math.PI;
+}
 
-    addLights(scene)
-
-    document.body.appendChild(renderer.domElement);
-
+function setupEventHandlers() {
     scrambleTextArea = document.getElementById('scramble');
     scrambleSubmitButton = document.getElementById('submit');
     resetCameraButton = document.getElementById('reset-camera');
@@ -124,6 +105,37 @@ function init() {
         camera.position.y = 10;
         camera.position.z = 20;
     })
+}
+
+async function init() {
+    scene = new Scene();
+
+    renderer = new WebGLRenderer({antialias: true});
+
+    renderer.setSize(
+        window.innerWidth,
+        window.innerHeight
+    );
+
+    renderer.outputEncoding = sRGBEncoding;
+
+    rubiksCube = new RubiksCube({
+        cubieSize: 1,
+        cubieSpacing: .005,
+        rotatingSpeed: Math.PI / 45
+    });
+
+    await rubiksCube.init();
+
+    setupCamera();
+
+    setupOrbitControls();
+
+    setupLights(scene)
+
+    document.body.appendChild(renderer.domElement);
+
+    setupEventHandlers();
 
     scene.add(rubiksCube);
 
