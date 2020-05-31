@@ -10,7 +10,7 @@ Click on any of the black area thats not the header with the text input to move 
 # Getting started
 
 If youre just looking to play with it, open the terminal and run `npm start`
-then open `localhost:8000/index.html`
+then open `localhost:8000/`
 
 ## To Start Developing
 

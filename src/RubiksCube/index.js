@@ -14,7 +14,7 @@ import {
     axis_map,
     direction_map,
     face_color_map
-} from './map_constants';
+} from './mapConstants';
 
 import { loadGeometry, nearlyEqual } from './utils';
 

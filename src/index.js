@@ -6,8 +6,9 @@ import {
     sRGBEncoding,
 } from "three";
 
-import RubiksCube from './RubiksCube';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+
+import RubiksCube from './RubiksCube';
 
 let scene,
     camera,
