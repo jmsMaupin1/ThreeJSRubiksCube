@@ -10,6 +10,12 @@ import {
 } from "three";
 
 import {
+    Easing,
+    autoPlay,
+    Tween
+} from 'es6-tween';
+
+import {
     layer_filter_map,
     axis_map,
     direction_map,
@@ -19,11 +25,13 @@ import {
 import { loadGeometry, nearlyEqual } from './utils';
 
 export default class RubiksCubeV2 extends Object3D {
-    constructor({cubieSize, cubieSpacing, rotatingSpeed}) {
+    // moveDuration is in milliseconds
+    constructor({cubieSize, cubieSpacing, moveDuration}) {
         super()
 
+        autoPlay(true);
+
         this.currentDirection;
-        this.currentMove;
 
         this.cubies = [];
         this.moveQueue = [];
@@ -31,7 +39,7 @@ export default class RubiksCubeV2 extends Object3D {
 
         this.cubieSize = cubieSize;
         this.cubieSpacing = cubieSpacing;
-        this.rotatingSpeed = rotatingSpeed;
+        this.moveDuration = moveDuration;
 
         this.cubie_identity_map = {};
 
@@ -65,9 +73,11 @@ export default class RubiksCubeV2 extends Object3D {
     }
 
     /*
-        pivot is just a grouping of objects, we add all the cubies in
+        pivot is a grouping of objects, we add all the cubies in
         the activeGroup to the pivot group, tell our cube that on each animation
         loop we should be moving and in what direction
+
+        we then tween between the start rotation to the goal rotation
     */
     startRotation(layer, direction = 1) {
         this.pivot.rotation.set(0, 0, 0);
@@ -81,31 +91,15 @@ export default class RubiksCubeV2 extends Object3D {
 
         this.add(this.pivot);
 
-        this.isMoving = true;
-        this.currentDirection = direction;
-        this.currentMove = layer;
-    }
+        let goalAngle = Math.PI / (direction_map[layer] / direction);
+        let axis = axis_map[layer];
 
-    /*
-        We are grabbing the currentRotation and goalRotation and to find out
-        how far out the goal rotation is from where we are. If its less than some
-        threshold then we just snap to the goal rotation, if not we rotate in
-        the correct direction based on this.currentDirection and this.currentMove
-    */
-    rotate() {
-        let {pivot, currentMove, currentDirection, rotatingSpeed} = this;
-
-        let currentRotation = pivot.rotation[axis_map[currentMove]];
-        let goalRotation = Math.PI / (direction_map[currentMove] / currentDirection);
-    
-        if (Math.abs(goalRotation) - Math.abs(currentRotation) <= .1) {
-            pivot.rotation[axis_map[currentMove]] = goalRotation;
-            this.completeRotation();
-        } else {
-            pivot.rotation[axis_map[currentMove]] += rotatingSpeed
-                * (direction_map[currentMove] / 2)
-                * currentDirection;
-        }
+        new Tween(this.pivot.rotation)
+            .to({[axis]: goalAngle}, this.moveDuration)
+            .on('complete', () => {
+                this.completeRotation();
+            })
+            .start();
     }
 
     /*
@@ -118,7 +112,6 @@ export default class RubiksCubeV2 extends Object3D {
         let {pivot, activeGroup, moveQueue} = this;
 
         this.isMoving = false;
-        this.currentMove = '';
 
         pivot.updateMatrixWorld();
         this.remove(pivot);

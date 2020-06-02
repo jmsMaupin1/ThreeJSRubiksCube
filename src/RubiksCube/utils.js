@@ -18,7 +18,7 @@ export const nearlyEqual = (n, target, distance_allowed = .1) => {
   for more information on .glb: https://wiki.fileformat.com/3d/glb/
 */
 export const loadGeometry = url =>
-new Promise((resolve, reject) => {
+  new Promise((resolve, reject) => {
   const loader = new GLTFLoader()
   loader.load(
     url,
@@ -29,5 +29,6 @@ new Promise((resolve, reject) => {
       resolve(geometry)
     },
     undefined,
-    reject)
+    reject
+  )
 })

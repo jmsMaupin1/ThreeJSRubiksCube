@@ -9,12 +9,12 @@ Click on any of the black area thats not the header with the text input to move 
 
 # Getting started
 
+Make sure you have [NodeJS](https://nodejs.org/en/) and [http-server](https://www.npmjs.com/package/http-server) installed
+
 If youre just looking to play with it, open the terminal and run `npm start`
 then open `localhost:8000/`
 
 ## To Start Developing
-
-Make sure you have [NodeJS](https://nodejs.org/en/) and [http-server](https://www.npmjs.com/package/http-server) installed
 
 run `npm install`
 
