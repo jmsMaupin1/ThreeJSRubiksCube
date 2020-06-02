@@ -10,20 +10,27 @@ import {
 } from "three";
 
 import {
+    autoPlay,
+    Tween
+} from 'es6-tween';
+
+import {
     layer_filter_map,
     axis_map,
     direction_map,
     face_color_map
-} from './map_constants';
+} from './mapConstants';
 
 import { loadGeometry, nearlyEqual } from './utils';
 
 export default class RubiksCubeV2 extends Object3D {
-    constructor({cubieSize, cubieSpacing, rotatingSpeed}) {
+    // moveDuration is in milliseconds
+    constructor({cubieSize, cubieSpacing, moveDuration}) {
         super()
 
+        autoPlay(true);
+
         this.currentDirection;
-        this.currentMove;
 
         this.cubies = [];
         this.moveQueue = [];
@@ -31,7 +38,7 @@ export default class RubiksCubeV2 extends Object3D {
 
         this.cubieSize = cubieSize;
         this.cubieSpacing = cubieSpacing;
-        this.rotatingSpeed = rotatingSpeed;
+        this.moveDuration = moveDuration;
 
         this.cubie_identity_map = {};
 
@@ -65,9 +72,11 @@ export default class RubiksCubeV2 extends Object3D {
     }
 
     /*
-        pivot is just a grouping of objects, we add all the cubies in
+        pivot is a grouping of objects, we add all the cubies in
         the activeGroup to the pivot group, tell our cube that on each animation
         loop we should be moving and in what direction
+
+        we then tween between the start rotation to the goal rotation
     */
     startRotation(layer, direction = 1) {
         this.pivot.rotation.set(0, 0, 0);
@@ -81,31 +90,15 @@ export default class RubiksCubeV2 extends Object3D {
 
         this.add(this.pivot);
 
-        this.isMoving = true;
-        this.currentDirection = direction;
-        this.currentMove = layer;
-    }
+        let goalAngle = Math.PI / (direction_map[layer] / direction);
+        let axis = axis_map[layer];
 
-    /*
-        We are grabbing the currentRotation and goalRotation and to find out
-        how far out the goal rotation is from where we are. If its less than some
-        threshold then we just snap to the goal rotation, if not we rotate in
-        the correct direction based on this.currentDirection and this.currentMove
-    */
-    rotate() {
-        let {pivot, currentMove, currentDirection, rotatingSpeed} = this;
-
-        let currentRotation = pivot.rotation[axis_map[currentMove]];
-        let goalRotation = Math.PI / (direction_map[currentMove] / currentDirection);
-    
-        if (Math.abs(goalRotation) - Math.abs(currentRotation) <= .1) {
-            pivot.rotation[axis_map[currentMove]] = goalRotation;
-            this.completeRotation();
-        } else {
-            pivot.rotation[axis_map[currentMove]] += rotatingSpeed
-                * (direction_map[currentMove] / 2)
-                * currentDirection;
-        }
+        new Tween(this.pivot.rotation)
+            .to({[axis]: goalAngle}, this.moveDuration)
+            .on('complete', () => {
+                this.completeRotation();
+            })
+            .start();
     }
 
     /*
@@ -118,7 +111,6 @@ export default class RubiksCubeV2 extends Object3D {
         let {pivot, activeGroup, moveQueue} = this;
 
         this.isMoving = false;
-        this.currentMove = '';
 
         pivot.updateMatrixWorld();
         this.remove(pivot);
@@ -161,9 +153,7 @@ export default class RubiksCubeV2 extends Object3D {
         }
     }
 
-    /*
-        This allows a user to put in a human readable algorithm, and start the cube moving
-    */
+    // This allows a user to put in a human readable algorithm, and start the cube moving
     performAlg(algorithm){
         this.processAlgorithm(algorithm)
     
@@ -213,21 +203,43 @@ export default class RubiksCubeV2 extends Object3D {
          * of the faces in the pieces key 
          * and check them against their corresponding bit in pieces[key] to determine
          * if they should be on or off
+         * 
+         * Then we tween between the current color and the new one if they are different.
         */
         this.getPieces(Object.keys(pieces)).forEach(piece => {
             let faceIDs = sortedKeyToPieceMap[piece.userData.id].split("");
             faceIDs.forEach((fid, index, arr) => {
                 let faceIndexMask = 1 << (arr.length - 1) - index;
                 let id = sortedKeyToPieceMap[piece.userData.id]
+                let faces = piece.userData.faceNormals[fid];
+
                 if (faceIndexMask & pieces[id]) {
-                    piece.userData.faceNormals[fid].forEach(face => {
-                        face.color = new Color(face_color_map[fid])
-                    })
+                    if (!faces[0].color.equals(new Color(face_color_map[fid]))) {
+                        new Tween(faces[0].color)
+                            .to(new Color(face_color_map[fid]), 500)
+                            .on('update', c => {
+                                piece.userData.faceNormals[fid].forEach(face => {
+                                    face.color = c;
+                                })
+
+                                piece.geometry.elementsNeedUpdate = true;
+                            })
+                            .start();
+                    }
                 } else {
-                    piece.userData.faceNormals[fid].forEach(face => {
-                        face.color = new Color(face_color_map['inside'])
-                    })
+                    if (!faces[0].color.equals(new Color(face_color_map['inside'])))
+                        new Tween(faces[0].color)
+                            .to(new Color(face_color_map['inside']), 500)
+                            .on('update', c => {
+                                piece.userData.faceNormals[fid].forEach(face => {
+                                    face.color = c;
+                                })
+
+                                piece.geometry.elementsNeedUpdate = true;
+                            })
+                            .start();
                 }
+
             })
         })
     }
@@ -271,7 +283,15 @@ export default class RubiksCubeV2 extends Object3D {
                         "L": [],
                         "F": [],
                         "B": []
-                        
+                    }
+
+                    let faceIndicies = {
+                        "U": [],
+                        "D": [],
+                        "R": [],
+                        "L": [],
+                        "F": [],
+                        "B": []
                     }
 
                     /*
@@ -279,37 +299,43 @@ export default class RubiksCubeV2 extends Object3D {
 
                         For each cubie we keep track of the where the faces are in the geometry so that if we need to change individual face colors later we know exactly which of the values in the array to modify without having to loop through all of them again.
                     */
-                    coloredGeo.faces.forEach((face) => {
+                    coloredGeo.faces.forEach((face, index) => {
                         face.color = new Color(face_color_map['inside'])
 
                         if (y == 2 && nearlyEqual(face.normal.y, 1, 1e-12)) {
                             face.color = new Color(face_color_map['U']);
                             faceNormals['U'].push(face)
+                            faceIndicies['U'].push(index)
                             if (cubieId.indexOf('U') === -1)
                                 cubieId += 'U';
                         }if (y == 0 && nearlyEqual(face.normal.y, -1, 1e-12)) {
                             face.color = new Color(face_color_map['D']);
                             faceNormals['D'].push(face);
+                            faceIndicies['D'].push(index)
                             if (cubieId.indexOf('D') === -1)
                                 cubieId += 'D';
                         }if (x == 2 && nearlyEqual(face.normal.x, 1, 1e-12)) {
                             face.color = new Color(face_color_map['R']);
                             faceNormals['R'].push(face);
+                            faceIndicies['R'].push(index)
                             if (cubieId.indexOf('R') === -1)
                                 cubieId += 'R';
                         }if (x == 0 && nearlyEqual(face.normal.x, -1, 1e-12)) {
                             face.color = new Color(face_color_map['L']);
                             faceNormals['L'].push(face);
+                            faceIndicies['L'].push(index)
                             if (cubieId.indexOf('L') === -1)
                                 cubieId += 'L';
                         }if (z == 2 && nearlyEqual(face.normal.z, 1, 1e-12)) {
                             face.color = new Color(face_color_map['F']);
                             faceNormals['F'].push(face);
+                            faceIndicies['F'].push(index)
                             if (cubieId.indexOf('F') === -1)
                                 cubieId += 'F';
                         }if (z == 0 && nearlyEqual(face.normal.z, -1, 1e-12)) {
                             face.color = new Color(face_color_map['B']);
                             faceNormals['B'].push(face);
+                            faceIndicies['B'].push(index)
                             if (cubieId.indexOf('B') === -1)
                                 cubieId += 'B';
                         }
@@ -345,6 +371,7 @@ export default class RubiksCubeV2 extends Object3D {
 
                     // This is to keep track of faces on rotation, to enable/disable stickers
                     cubie.userData.faceNormals = faceNormals;
+                    cubie.userData.faceIndicies = faceIndicies; 
 
                     this.cubies.push(cubie);
                     this.attach(cubie);

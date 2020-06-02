@@ -6,8 +6,9 @@ import {
     sRGBEncoding,
 } from "three";
 
-import RubiksCube from './RubiksCube';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+
+import RubiksCube from './RubiksCube';
 
 let scene,
     camera,
@@ -15,10 +16,7 @@ let scene,
     controls,
     rubiksCube;
 
-function render() {
-    if (rubiksCube.isMoving) 
-        rubiksCube.rotate();
-    
+function render() {    
     requestAnimationFrame(render);
     controls.update();
     renderer.render(scene, camera);
@@ -124,7 +122,7 @@ async function init() {
     rubiksCube = new RubiksCube({
         cubieSize: 1,
         cubieSpacing: .005,
-        rotatingSpeed: Math.PI / 45
+        moveDuration: 500
     });
 
     await rubiksCube.init();

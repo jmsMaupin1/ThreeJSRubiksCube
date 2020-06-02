@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "es6-tween": "^5.5.11",
     "three": "^0.116.1"
   },
   "devDependencies": {
