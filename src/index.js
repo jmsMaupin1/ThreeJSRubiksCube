@@ -9,6 +9,7 @@ import {
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 import RubiksCube from './RubiksCube';
+import { cross, OLL, firstLayer } from './RubiksCube/stickerStateGroups';
 
 let scene,
     camera,
@@ -138,6 +139,8 @@ async function init() {
     setupEventHandlers();
 
     scene.add(rubiksCube);
+
+    rubiksCube.toggleStickerState(firstLayer)
 
     render();
 }

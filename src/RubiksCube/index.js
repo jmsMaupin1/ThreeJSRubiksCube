@@ -207,22 +207,51 @@ export default class RubiksCubeV2 extends Object3D {
          * and check them against their corresponding bit in pieces[key] to determine
          * if they should be on or off
         */
+
         this.getPieces(Object.keys(pieces)).forEach(piece => {
             let faceIDs = sortedKeyToPieceMap[piece.userData.id].split("");
-            faceIDs.forEach((fid, index, arr) => {
-                let faceIndexMask = 1 << (arr.length - 1) - index;
-                let id = sortedKeyToPieceMap[piece.userData.id]
-                if (faceIndexMask & pieces[id]) {
-                    piece.userData.faceNormals[fid].forEach(face => {
-                        face.color = new Color(face_color_map[fid])
+
+            faceIDs.forEach(fid => {
+                let initColor = piece.userData.faceNormals[fid][0].color;
+                let goalColor = new Color('black');
+
+                new Tween(initColor)
+                    .to(goalColor)
+                    .on('update', color => {
+                        piece.userData.faceNormals[fid].forEach(face => {
+                            face.color = color;
+                        })
                     })
-                } else {
-                    piece.userData.faceNormals[fid].forEach(face => {
-                        face.color = new Color(face_color_map['inside'])
+                    .on('complete', color => {
+                        console.log(piece.userData.faceNormals)
+
+                        let cubieFaces = this.cubies.filter(cubie => {
+                            return cubie.userData.id === piece.userData.id;
+                        })[0].geometry.faces;
+                        console.log(cubieFaces)
+
+                        console.log()
                     })
-                }
+                    .start();
             })
-        })
+        });
+
+        // this.getPieces(Object.keys(pieces)).forEach(piece => {
+        //     let faceIDs = sortedKeyToPieceMap[piece.userData.id].split("");
+        //     faceIDs.forEach((fid, index, arr) => {
+        //         let faceIndexMask = 1 << (arr.length - 1) - index;
+        //         let id = sortedKeyToPieceMap[piece.userData.id]
+        //         if (faceIndexMask & pieces[id]) {
+        //             piece.userData.faceNormals[fid].forEach(face => {
+        //                 face.color = new Color(face_color_map[fid])
+        //             })
+        //         } else {
+        //             piece.userData.faceNormals[fid].forEach(face => {
+        //                 face.color = new Color(face_color_map['inside'])
+        //             })
+        //         }
+        //     })
+        // })
     }
 
     // Allows user to reset back to a solved cube state
