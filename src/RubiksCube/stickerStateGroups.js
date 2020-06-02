@@ -108,6 +108,7 @@ export const firstLayer = allOffExcept({
     "L": 0b1,
     "D": 0b1,
     "B": 0b1,
+    "U": 0b1
 })
 
 // Exports the first two layer only sticker group
