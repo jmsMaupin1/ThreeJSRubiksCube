@@ -31,7 +31,8 @@ const cubieIDs = [
     This allows users to specify a few specific stickers to leave on,
     and turn the rest off
 
-    stickers should be an object where each key is the id of a given cubie and the value is an integer. You use the integer's active bits to determine whether a face on the cubie will be marked as on or off
+    stickers should be an object where each key is the id of a given cubie and the value is an integer. 
+    You use the integer's active bits to determine whether a face on the cubie will be marked as on or off
 
     for example:
 
@@ -42,7 +43,8 @@ const cubieIDs = [
 
     this would turn every sticker off except on the RUF's R and U stickers and all of FLD's stickers
     
-    note: this function doesnt turn them off itself, its just used to easily generate specific patterns as an object, you feed the output of this to the Cubes toggleStickerState function
+    note: this function doesnt turn them off itself, its just used to easily generate specific patterns as an object, 
+    you feed the output of this to the Cubes toggleStickerState function
 */
 export function allOffExcept(stickers) {
     let stickerKeys = Object.keys(stickers);
