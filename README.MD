@@ -1,9 +1,9 @@
 ![Rubik's Cube](./assets/RubiksHeaderLogo.png)
 # 3D Rubik's cube with Three.js
 
-This is the first draft of a 3D Rubik's cube rendered in the browser using Three.js.
+This is a 3D Rubik's cube rendered in the browser using Three.js.
 
-Currently you can input an algorithm using standard Rubik's cube notation.
+Currently you can input an algorithm using standard [Rubik's cube notation](https://jperm.net/3x3/moves).
 
 Click on any of the black area thats not the header with the text input to move the camera around the cube
 
