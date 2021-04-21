@@ -295,9 +295,12 @@ export default class RubiksCubeV2 extends Object3D {
                     }
 
                     /*
-                        we go through all the faces of the geometry and color them according to which direction that face is facing and what cubie we are currently working on.
+                        we go through all the faces of the geometry and color them according to
+                        which direction that face is facing and what cubie we are currently working on.
 
-                        For each cubie we keep track of the where the faces are in the geometry so that if we need to change individual face colors later we know exactly which of the values in the array to modify without having to loop through all of them again.
+                        For each cubie we keep track of the where the faces are in the geometry so that
+                        if we need to change individual face colors later we know exactly which of the values
+                        in the array to modify without having to loop through all of them again.
                     */
                     coloredGeo.faces.forEach((face, index) => {
                         face.color = new Color(face_color_map['inside'])
